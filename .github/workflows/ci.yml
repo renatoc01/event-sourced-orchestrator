@@ -40,6 +40,25 @@ jobs:
         curl -X POST http://localhost:8080/orders \
           -H "Content-Type: application/json" \
           -d '{"id": 1, "item": "Widget", "quantity": 10}'
+          
+    - name: Validate Order Creation Response
+      run: |
+        response=$(curl -s -o response.txt -w "%{http_code}" -X POST http://localhost:8080/orders \
+          -H "Content-Type: application/json" \
+          -d '{"id": 1, "item": "Widget", "quantity": 10}')
+        cat response.txt
+        test "$response" -eq 200
+
+          
+    - name: Show logs from order-service
+      run: docker logs $(docker ps -qf "name=order-service")
+
+    - name: Show logs from inventory-service
+      run: docker logs $(docker ps -qf "name=inventory-service")
+
+    - name: Show logs from notification-service
+      run: docker logs $(docker ps -qf "name=notification-service")
+
 
     - name: Stop services
       run: docker compose down
