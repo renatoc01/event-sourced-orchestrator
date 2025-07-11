@@ -37,10 +37,10 @@ jobs:
 
     - name: Build and push images
       run: |
-        docker-compose build
+        docker compose build
 
     - name: Start services
       run: |
-        docker-compose up -d
+        docker compose up -d
 
     # Aqui você pode adicionar steps para testes e validação
