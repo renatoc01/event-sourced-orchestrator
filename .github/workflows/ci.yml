@@ -1,0 +1,46 @@
+name: Orchestrator CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout orquestrador
+      uses: actions/checkout@v4
+
+    - name: Checkout order-service
+      uses: actions/checkout@v4
+      with:
+        repository: renatoc01/order-service
+        path: order-service
+
+    - name: Checkout inventory-service
+      uses: actions/checkout@v4
+      with:
+        repository: renatoc01/inventory-service
+        path: inventory-service
+
+    - name: Checkout notification-service
+      uses: actions/checkout@v4
+      with:
+        repository: renatoc01/notification-service
+        path: notification-service
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Build and push images
+      run: |
+        docker-compose build
+
+    - name: Start services
+      run: |
+        docker-compose up -d
+
+    # Aqui você pode adicionar steps para testes e validação
