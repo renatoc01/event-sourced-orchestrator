@@ -33,7 +33,7 @@ jobs:
       run: docker compose up -d
 
     - name: Wait for services to be ready
-      run: sleep 20
+      run: sleep 60
           
     - name: Smoke Test - Create Order
       run: |
