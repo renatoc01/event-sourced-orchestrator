@@ -35,13 +35,45 @@ jobs:
     - name: Wait for services to be ready
       run: sleep 20
           
-    - name: Test Order Creation Endpoint (basic smoke test) and Validate Order Creation Response
+    - name: Smoke Test - Create Order
       run: |
-        response=$(curl -s -o response.txt -w "%{http_code}" -X POST http://localhost:8080/orders \
+        echo "Creating order..."
+        response=$(curl -s -X POST http://localhost:8080/orders \
           -H "Content-Type: application/json" \
-          -d '{"id": 1, "item": "Widget", "quantity": 10}')
-        cat response.txt
-        test "$response" -eq 200
+          -d '{"item": "laptop", "quantity": 2}')
+        echo "Order ID: $response"
+        
+        if [[ "$response" =~ ^[0-9a-fA-F-]+$ ]]; then
+          echo "$response" > order_id.txt
+        else
+          echo "❌ Failed to create order. Response: $response"
+          exit 1
+        fi
+
+    - name: Smoke Test - Ship Order
+      run: |
+        id=$(cat order_id.txt)
+        echo "Shipping order with ID: $id"
+        status=$(curl -s -o /dev/null -w "%{http_code}" -X POST http://localhost:8080/orders/$id/ship)
+        if [ "$status" -ne 200 ]; then
+          echo "❌ Failed to ship order. Status: $status"
+          exit 1
+        else
+          echo "✅ Order shipped"
+        fi
+
+    - name: Smoke Test - Get Order Status
+      run: |
+        id=$(cat order_id.txt)
+        echo "Fetching order status for ID: $id"
+        response=$(curl -s http://localhost:8080/orders/$id)
+        echo "$response"
+        if [[ "$response" == *"SHIPPED"* ]]; then
+          echo "✅ Order is shipped"
+        else
+          echo "❌ Order status not as expected"
+          exit 1
+        fi
 
           
     - name: Show logs from order-service
